@@ -44,10 +44,6 @@ const App = () => {
     const submitPerson = e => {
         e.preventDefault();
         let exists = false;
-        /**
-         * Randomize the id so we don't have to put too much
-         * effort in to it at this time
-         */
         persons.forEach(person => {
             if (newName === person.name) {
                 exists = true;
