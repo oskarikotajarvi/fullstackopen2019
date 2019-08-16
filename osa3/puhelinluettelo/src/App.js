@@ -75,9 +75,7 @@ const App = () => {
                     })
                     .catch(() => {
                         notify(
-                            `Information of ${
-                                person.name
-                            } has already been removed from the server`,
+                            `Information of ${person.name} has already been removed from the server`,
                             true,
                         );
                     });
@@ -97,9 +95,7 @@ const App = () => {
                 })
                 .catch(() => {
                     notify(
-                        `Information of ${
-                            person.name
-                        } has already been removed from the server`,
+                        `Information of ${person.name} has already been removed from the server`,
                         true,
                     );
                 });
