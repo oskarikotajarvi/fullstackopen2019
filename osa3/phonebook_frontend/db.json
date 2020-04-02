@@ -1,0 +1,14 @@
+{
+  "persons": [
+    {
+      "name": "Oskari Kotajärvi",
+      "number": "0404",
+      "id": 6
+    },
+    {
+      "name": "Foo Bar",
+      "number": "1337-1337",
+      "id": 7
+    }
+  ]
+}
