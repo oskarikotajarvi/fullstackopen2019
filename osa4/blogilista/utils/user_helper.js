@@ -3,7 +3,7 @@ const User = require('../models/user');
 const initialUser = {
   username: 'initialUser',
   name: 'Initial User',
-  passwordHash: 'hashedpass'
+  passwordHash: 'password'
 };
 
 const validUser = {
@@ -33,6 +33,11 @@ const passwordTooShort = {
 const usersInDb = async () => {
   const users = await User.find({});
   return users.map(user => user.toJSON());
+};
+
+const getUserById = async id => {
+  const user = await User.findById(id);
+  return user;
 };
 
 module.exports = {

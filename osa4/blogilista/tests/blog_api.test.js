@@ -1,16 +1,31 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 const helper = require('../utils/list_helper');
+const userHelper = require('../utils/user_helper');
 const app = require('../app');
 const Blog = require('../models/blog');
+const User = require('../models/user');
 
 const api = supertest(app);
+
+/**
+ * A helper function to get authorization token
+ */
+const addUserAndLogin = async () => {
+  const validUser = userHelper.validUser;
+  await api.post('/api/users').send(validUser);
+  const loginData = await api
+    .post('/api/login')
+    .send({ username: validUser.username, password: validUser.password });
+  return { token: loginData.body.token, username: loginData.body.username };
+};
 
 /**
  * Before each test we remove all of the blogs in the
  * database and populate it with new ones
  */
 beforeEach(async () => {
+  await User.deleteMany({});
   await Blog.deleteMany({});
   await Blog.insertMany(helper.blogs);
 });
@@ -41,17 +56,29 @@ describe('When there is initially some blogs saved...', () => {
 
   // Test deletion of a blog by id
   test('a single blog can be deleted by id', async () => {
-    const allBlogs = await helper.blogsInDb();
-    const idToRemove = allBlogs[0].id;
-    await api.delete(`/api/blogs/${idToRemove}`).expect(204);
+    const userData = await addUserAndLogin();
+    const newBlog = helper.singleBlog;
+    addedBlog = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .set('Authorization', 'bearer ' + userData.token)
+      .expect(201);
+    await api
+      .delete(`/api/blogs/${addedBlog.body.id}`)
+      .set('Authorization', 'bearer ' + userData.token)
+      .expect(204);
     const blogsAtEnd = await helper.blogsInDb();
-    expect(blogsAtEnd).toHaveLength(helper.blogs.length - 1);
+    expect(blogsAtEnd).toHaveLength(helper.blogs.length);
   });
 
   // Test failing of a deletion if the ID does not exist
   test('deletion of a single blog fails with code 400 if nonexisting id', async () => {
+    const userData = await addUserAndLogin();
     const nonValidId = '5a3d5da59070081a82a3445';
-    await api.delete(`/api/blogs/${nonValidId}`).expect(400);
+    await api
+      .delete(`/api/blogs/${nonValidId}`)
+      .set('Authorization', 'bearer ' + userData.token)
+      .expect(400);
   });
 
   // Test like amount modificaton
@@ -80,6 +107,7 @@ describe('When there is initially some blogs saved...', () => {
 describe('Addition of a new blog...', () => {
   // Test to see if a valid blog can be added
   test('a valid blog can be added', async () => {
+    const userData = await addUserAndLogin();
     const newBlog = {
       title: 'Test title',
       author: 'Test Author',
@@ -90,11 +118,24 @@ describe('Addition of a new blog...', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', 'bearer ' + userData.token)
       .expect(201)
       .expect('Content-Type', /application\/json/);
 
     const blogsAtEnd = await helper.blogsInDb();
     expect(blogsAtEnd).toHaveLength(helper.blogs.length + 1);
+  });
+
+  //Test to see if status will be 401 if no token is given
+  test('if no token is given, response 401 unauthorized', async () => {
+    const newBlog = {
+      title: 'Test title',
+      author: 'Test Author',
+      url: 'http://testurl.com',
+      likes: 0
+    };
+
+    await api.post('/api/blogs').send(newBlog).expect(401);
   });
 
   // Test default like amount to be set at 0
@@ -105,9 +146,12 @@ describe('Addition of a new blog...', () => {
       url: 'http://testurl.com'
     };
 
+    const userData = await addUserAndLogin();
+
     const result = await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', 'bearer ' + userData.token)
       .expect(201)
       .expect('Content-Type', /application\/json/);
     expect(result.body.likes).toEqual(0);
@@ -116,7 +160,12 @@ describe('Addition of a new blog...', () => {
   // Test failing of adding a blog if there is no title or url defined
   test('fails with status 400 if no title or url defined', async () => {
     const newBlog = { author: 'Test Author' };
-    await api.post('/api/blogs').send(newBlog).expect(400);
+    const userData = await addUserAndLogin();
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+      .set('Authorization', 'bearer ' + userData.token);
   });
 });
 

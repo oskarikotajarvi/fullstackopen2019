@@ -5,8 +5,11 @@ const app = express(); // Initialize express
 const cors = require('cors');
 const blogsRouter = require('./controllers/blogs');
 const userRouter = require('./controllers/users');
+const loginRouter = require('./controllers/login');
 const mongoose = require('mongoose');
-const errorHandler = require('./middlewares/errorHandler');
+//const errorHandler = require('./middlewares/errorHandler');
+const errorHandlers = require('./middlewares/errorHandlers');
+const tokenExtractor = require('./middlewares/tokenWare');
 
 // Initialize mongoDB connection
 mongoose.connect(config.MONGODB_URI, {
@@ -16,16 +19,19 @@ mongoose.connect(config.MONGODB_URI, {
   useCreateIndex: true
 });
 
-// Express plugins
+// Express plugins / middlewares
 app.use(cors());
 app.use(express.json());
+app.use(tokenExtractor);
 
 // Routes
 app.use('/api/blogs', blogsRouter);
 app.use('/api/users', userRouter);
+app.use('/api/login', loginRouter);
 
-// Middlewares
-app.use(errorHandler);
+// Later middlewares
+app.use(errorHandlers.errorHandler);
+app.use(errorHandlers.unknownEndpoint);
 
 // Export app
 module.exports = app;

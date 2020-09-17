@@ -4,7 +4,11 @@ const bcrypt = require('bcrypt');
 
 // Get all users
 userRouter.get('/', async (req, res) => {
-  const result = await User.find({});
+  const result = await User.find({}).populate('blogs', {
+    url: 1,
+    title: 1,
+    author: 1
+  });
   const users = result.map(user => user.toJSON());
   res.status(200).json(users);
 });
