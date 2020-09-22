@@ -7,7 +7,6 @@ const blogsRouter = require('./controllers/blogs');
 const userRouter = require('./controllers/users');
 const loginRouter = require('./controllers/login');
 const mongoose = require('mongoose');
-//const errorHandler = require('./middlewares/errorHandler');
 const errorHandlers = require('./middlewares/errorHandlers');
 const tokenExtractor = require('./middlewares/tokenWare');
 
