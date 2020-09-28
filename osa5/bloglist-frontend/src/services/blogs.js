@@ -5,12 +5,11 @@ let token = null;
 
 const setToken = newToken => {
   token = `bearer ${newToken}`;
-  console.log(token);
 };
 
-const getAll = () => {
-  const request = axios.get(baseUrl);
-  return request.then(response => response.data);
+const getAll = async () => {
+  const res = await axios.get(baseUrl);
+  return res.data;
 };
 
 const create = async newBlog => {
@@ -21,4 +20,16 @@ const create = async newBlog => {
   return res.data;
 };
 
-export default { getAll, create, setToken };
+const like = async blog => {
+  const url = baseUrl + `/${blog.id}`;
+  const config = {
+    headers: { Authorization: token }
+  };
+
+  blog.likes += 1;
+
+  const res = await axios.put(url, blog, config);
+  return res.data;
+};
+
+export default { getAll, create, setToken, like };

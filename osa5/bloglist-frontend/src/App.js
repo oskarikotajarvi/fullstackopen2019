@@ -1,19 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Blog from './components/Blog';
 import blogService from './services/blogs';
 import loginService from './services/login';
+import Notification from './components/Notification';
+import BlogForm from './components/BlogForm';
+import Togglable from './components/Togglable';
+import './App.css';
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
+  const [blogs, setBlogs] = useState([]); //Set of blogs to show
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [user, setUser] = useState(null);
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [url, setUrl] = useState('');
+  const [user, setUser] = useState(null); //User data
+  const [notification, setNotification] = useState(null); // Notification message to show user
+  const [notificationType, setType] = useState(false); // Is the notification an error or generic message
+
+  const blogFormRef = useRef();
 
   useEffect(() => {
-    blogService.getAll().then(blogs => setBlogs(blogs));
+    async function getBlogs() {
+      const res = await blogService.getAll();
+      const sorted = res.sort((a, b) => {
+        return b.likes - a.likes;
+      });
+      setBlogs(sorted);
+    }
+    getBlogs();
   }, []);
 
   useEffect(() => {
@@ -21,8 +33,17 @@ const App = () => {
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
       setUser(user);
+      blogService.setToken(user.token);
     }
   }, []);
+
+  const notify = (message, error) => {
+    setType(error);
+    setNotification(message);
+    setTimeout(() => {
+      setNotification(null);
+    }, 5000);
+  };
 
   const handleLogin = async e => {
     e.preventDefault();
@@ -35,8 +56,10 @@ const App = () => {
       setUser(user);
       setUsername('');
       setPassword('');
-    } catch (exception) {
-      console.log(exception);
+    } catch (e) {
+      if (e.response.status === 401) {
+        notify('Incorrect username of password', true);
+      }
     }
   };
 
@@ -45,14 +68,34 @@ const App = () => {
     setUser(null);
   };
 
-  const handleCreate = async e => {
-    e.preventDefault();
+  const createBlog = async ({ title, author, url }) => {
     try {
-      const user = JSON.parse(window.localStorage.getItem('loggedUser'));
       const result = await blogService.create({ title, author, url });
-      blogs.push(result);
-    } catch (exception) {
-      console.log(exception);
+      setBlogs(blogs.concat(result));
+      notify(`A new blog ${title} by ${author} added`);
+      blogFormRef.current.toggleVisibility();
+    } catch (e) {
+      notify('Something went wrong when adding a blog', true);
+    }
+  };
+
+  const likeBlog = async blog => {
+    try {
+      const result = await blogService.like({
+        author: blog.author,
+        id: blog.id,
+        title: blog.title,
+        likes: blog.likes,
+        url: blog.url
+      });
+
+      const index = blogs.indexOf(blog);
+      blogs[index].likes = result.likes;
+      setBlogs(blogs);
+      console.log(blogs[index].likes);
+    } catch (e) {
+      notify('Error while liking the blog..', true);
+      console.log(e);
     }
   };
 
@@ -84,36 +127,9 @@ const App = () => {
 
   const blogForm = () => {
     return (
-      <form onSubmit={handleCreate}>
-        <div>
-          Title:
-          <input
-            type="text"
-            value={title}
-            name="Title"
-            onChange={({ target }) => setTitle(target.value)}
-          />
-        </div>
-        <div>
-          Author:
-          <input
-            type="text"
-            value={author}
-            name="Author"
-            onChange={({ target }) => setAuthor(target.value)}
-          />
-        </div>
-        <div>
-          URL:
-          <input
-            type="text"
-            value={url}
-            name="URL"
-            onChange={({ target }) => setUrl(target.value)}
-          />
-        </div>
-        <button type="submit">Create</button>
-      </form>
+      <Togglable buttonLabel="Create new blog" ref={blogFormRef}>
+        <BlogForm createBlog={createBlog} />
+      </Togglable>
     );
   };
 
@@ -121,6 +137,7 @@ const App = () => {
     return (
       <div>
         <h2>Log in</h2>
+        <Notification message={notification} error={notificationType} />
         {loginForm()}
       </div>
     );
@@ -130,12 +147,13 @@ const App = () => {
     <div>
       <h2>Blogs</h2>
       {user.name} logged in <button onClick={handleLogout}>Log out</button>
+      <Notification message={notification} error={notificationType} />
       <h2>Create new</h2>
       {blogForm()}
       <br />
       <br />
       {blogs.map(blog => (
-        <Blog key={blog.id} blog={blog} />
+        <Blog key={blog.id} blog={blog} handleLike={likeBlog} />
       ))}
     </div>
   );
