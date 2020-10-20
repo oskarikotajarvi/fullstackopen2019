@@ -1,31 +1,47 @@
 import React, { useState } from 'react';
 
-const Blog = ({ blog, handleLike }) => {
+const Blog = ({ blog, handleLike, handleRemove }) => {
   const [fullView, setView] = useState(false);
 
-  const showFull = fullView ? '' : 'hidden';
+  const user = JSON.parse(window.localStorage.getItem('loggedUser'));
+  let hasBlog = false;
+  if (user) {
+    hasBlog = user.blogs.includes(blog.id);
+  }
 
-  const toggleView = () => {
-    setView(!fullView);
-  };
+  const showFull = fullView ? 'full' : 'hidden';
 
   const like = async e => {
     e.preventDefault();
     handleLike(blog);
   };
 
+  const remove = async e => {
+    e.preventDefault();
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+      await handleRemove(blog.id);
+    }
+  };
+
   return (
     <div>
       <div className="blog">
-        <span>
-          {blog.title}{' '}
-          <button onClick={toggleView}>{showFull ? 'View' : 'Hide'}</button>
+        <span className="title">
+          {`${blog.title} - ${blog.author}`}{' '}
+          <button onClick={() => setView(!fullView)}>
+            {showFull ? 'View' : 'Hide'}
+          </button>
         </span>
-        <p className={showFull}>{blog.url}</p>
-        <span className={showFull}>
+        <p className={`url ${showFull}`}>{blog.url}</p>
+        <span className={`likes ${showFull}`}>
           likes {blog.likes} <button onClick={like}>Like</button>
         </span>
-        <p className={showFull}>{blog.author}</p>
+        <p className={`username ${showFull}`}>{blog.user.name}</p>
+        {hasBlog && (
+          <button className={showFull} onClick={remove}>
+            Remove
+          </button>
+        )}
       </div>
     </div>
   );

@@ -5,12 +5,11 @@ import loginService from './services/login';
 import Notification from './components/Notification';
 import BlogForm from './components/BlogForm';
 import Togglable from './components/Togglable';
+import LoginForm from './components/LoginForm';
 import './App.css';
 
 const App = () => {
   const [blogs, setBlogs] = useState([]); //Set of blogs to show
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [user, setUser] = useState(null); //User data
   const [notification, setNotification] = useState(null); // Notification message to show user
   const [notificationType, setType] = useState(false); // Is the notification an error or generic message
@@ -37,6 +36,11 @@ const App = () => {
     }
   }, []);
 
+  /**
+   * Create a notification
+   * @oaram {string} message - Notification message to be shown
+   * @param {boolean} error - Wether or not the notification is an error
+   */
   const notify = (message, error) => {
     setType(error);
     setNotification(message);
@@ -45,17 +49,17 @@ const App = () => {
     }, 5000);
   };
 
-  const handleLogin = async e => {
-    e.preventDefault();
+  /**
+   * Handle a login attempt
+   * @param {string} username - The username
+   * @param {string} password - The password
+   */
+  const handleLogin = async (username, password) => {
     try {
       const user = await loginService.login({ username, password });
-
       window.localStorage.setItem('loggedUser', JSON.stringify(user));
-
       blogService.setToken(user.token);
       setUser(user);
-      setUsername('');
-      setPassword('');
     } catch (e) {
       if (e.response.status === 401) {
         notify('Incorrect username of password', true);
@@ -63,22 +67,39 @@ const App = () => {
     }
   };
 
+  /**
+   * Handle a logout
+   */
   const handleLogout = () => {
     window.localStorage.removeItem('loggedUser');
     setUser(null);
   };
 
+  /**
+   * Handle the creation of a blog
+   * @param {Object} blog - The new blog to be added
+   * @param {string} blog.title - The title of the blog
+   * @param {string} blog.author - The author of the blog
+   * @param {string} blog.url - Url to the blog
+   */
   const createBlog = async ({ title, author, url }) => {
     try {
       const result = await blogService.create({ title, author, url });
-      setBlogs(blogs.concat(result));
+      const blogsCopy = blogs.slice();
+      blogsCopy[blogsCopy.length + 1] = result;
+      setBlogs(blogsCopy);
       notify(`A new blog ${title} by ${author} added`);
       blogFormRef.current.toggleVisibility();
     } catch (e) {
+      console.error(e);
       notify('Something went wrong when adding a blog', true);
     }
   };
 
+  /**
+   * Handle a like attempt on a blog
+   * @param {Object} blog - Liked blog
+   */
   const likeBlog = async blog => {
     try {
       const result = await blogService.like({
@@ -89,48 +110,32 @@ const App = () => {
         url: blog.url
       });
 
-      const index = blogs.indexOf(blog);
-      blogs[index].likes = result.likes;
-      setBlogs(blogs);
-      console.log(blogs[index].likes);
+      const updatedBlogs = blogs.slice();
+      const index = updatedBlogs.indexOf(blog);
+      updatedBlogs[index].likes = result.likes;
+      const sortedBlogs = updatedBlogs.sort((a, b) => {
+        return b.likes - a.likes;
+      });
+      setBlogs(sortedBlogs);
     } catch (e) {
       notify('Error while liking the blog..', true);
       console.log(e);
     }
   };
 
-  const loginForm = () => {
-    return (
-      <form onSubmit={handleLogin}>
-        <div>
-          Username
-          <input
-            type="text"
-            value={username}
-            name="Username"
-            onChange={({ target }) => setUsername(target.value)}
-          />
-        </div>
-        <div>
-          Password
-          <input
-            type="password"
-            value={password}
-            name="Password"
-            onChange={({ target }) => setPassword(target.value)}
-          />
-        </div>
-        <button type="submit">Login</button>
-      </form>
-    );
-  };
-
-  const blogForm = () => {
-    return (
-      <Togglable buttonLabel="Create new blog" ref={blogFormRef}>
-        <BlogForm createBlog={createBlog} />
-      </Togglable>
-    );
+  /*
+   * Handle the removal of a blog
+   * @param {string} id - The id of the blog to remove
+   */
+  const removeBlog = async id => {
+    try {
+      await blogService.remove(id);
+      const blogsCopy = blogs.slice();
+      const newBlogs = blogsCopy.filter(blog => blog.id !== id);
+      setBlogs(newBlogs);
+    } catch (e) {
+      notify('Erro while removing the blog. Please try again.', true);
+    }
   };
 
   if (user === null) {
@@ -138,7 +143,7 @@ const App = () => {
       <div>
         <h2>Log in</h2>
         <Notification message={notification} error={notificationType} />
-        {loginForm()}
+        <LoginForm handleLogin={handleLogin} />
       </div>
     );
   }
@@ -149,11 +154,18 @@ const App = () => {
       {user.name} logged in <button onClick={handleLogout}>Log out</button>
       <Notification message={notification} error={notificationType} />
       <h2>Create new</h2>
-      {blogForm()}
+      <Togglable buttonLabel="Create new blog" ref={blogFormRef}>
+        <BlogForm createBlog={createBlog} />
+      </Togglable>
       <br />
       <br />
       {blogs.map(blog => (
-        <Blog key={blog.id} blog={blog} handleLike={likeBlog} />
+        <Blog
+          key={blog.id}
+          blog={blog}
+          handleLike={likeBlog}
+          handleRemove={removeBlog}
+        />
       ))}
     </div>
   );
