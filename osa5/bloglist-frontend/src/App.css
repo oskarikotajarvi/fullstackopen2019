@@ -59,6 +59,10 @@
   display: none;
 }
 
+.full {
+  display: block;
+}
+
 .blog {
   padding-top: 10px;
   padding-left: 2px;
