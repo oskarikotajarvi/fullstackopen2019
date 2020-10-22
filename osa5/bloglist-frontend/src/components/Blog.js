@@ -9,8 +9,6 @@ const Blog = ({ blog, handleLike, handleRemove }) => {
     hasBlog = user.blogs.includes(blog.id);
   }
 
-  const showFull = fullView ? 'full' : 'hidden';
-
   const showWhenVisible = { display: fullView ? '' : 'none' };
 
   const like = async e => {
@@ -47,7 +45,11 @@ const Blog = ({ blog, handleLike, handleRemove }) => {
           {blog.user.name}
         </p>
         {hasBlog && (
-          <button className={showFull} onClick={remove}>
+          <button
+            className="removeButton"
+            style={showWhenVisible}
+            onClick={remove}
+          >
             Remove
           </button>
         )}

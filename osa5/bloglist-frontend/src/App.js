@@ -62,7 +62,7 @@ const App = () => {
       setUser(user);
     } catch (e) {
       if (e.response.status === 401) {
-        notify('Incorrect username of password', true);
+        notify('Incorrect username or password', true);
       }
     }
   };
@@ -151,7 +151,10 @@ const App = () => {
   return (
     <div>
       <h2>Blogs</h2>
-      {user.name} logged in <button onClick={handleLogout}>Log out</button>
+      {user.name} logged in{' '}
+      <button id="logoutButton" onClick={handleLogout}>
+        Log out
+      </button>
       <Notification message={notification} error={notificationType} />
       <h2>Create new</h2>
       <Togglable buttonLabel="Create new blog" ref={blogFormRef}>
