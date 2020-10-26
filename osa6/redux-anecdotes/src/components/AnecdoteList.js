@@ -7,7 +7,6 @@ const Anecdote = ({ anecdote }) => {
   const dispatch = useDispatch();
 
   const vote = ({ id, content }) => {
-    clearTimeout();
     dispatch(voteAnecdote(id));
     dispatch(votedNotification(content));
   };
