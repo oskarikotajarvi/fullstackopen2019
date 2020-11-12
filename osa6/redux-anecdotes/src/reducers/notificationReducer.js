@@ -9,41 +9,15 @@ const asObject = content => {
 
 const reducer = (state = [], action) => {
   switch (action.type) {
-    case 'ANECDOTE_VOTE_NOTIFICATION':
-      return [...state, asObject(`You voted "${action.data.notification}"`)];
-
-    case 'ANECDOTE_CREATED_NOTIFICATION':
-      return [...state, asObject(`Anecdote "${action.content}" created`)];
-
     case 'SET_NOTIFICATION':
       return [...state, action.notification];
 
     case 'RESET_NOTIFICATION':
-      const newState = state.filter(
-        notification => notification.id !== action.id
-      );
-      return newState;
+      return state.filter(notification => notification.id !== action.id);
 
     default:
       return state;
   }
-};
-
-export const resetNotification = id => {
-  return {
-    type: 'RESET_NOTIFICATION',
-    id
-  };
-};
-
-export const votedNotification = (content, notifyTime) => {
-  return async dispatch => {
-    const notification = asObject(content);
-    dispatch({ type: 'ANECDOTE_VOTE_NOTIFICATION', data: notification });
-    setTimeout(() => {
-      dispatch({ type: 'RESET_NOTIFICATION' });
-    }, notifyTime * 1000);
-  };
 };
 
 export const setNotification = (content, notifyTime) => {
@@ -55,13 +29,6 @@ export const setNotification = (content, notifyTime) => {
     setTimeout(() => {
       dispatch({ type: 'RESET_NOTIFICATION', id: notification.id });
     }, resetTime * 1000);
-  };
-};
-
-export const createdNotification = content => {
-  return {
-    type: 'ANECDOTE_CREATED_NOTIFICATION',
-    content
   };
 };
 
