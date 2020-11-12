@@ -1,34 +1,60 @@
-const initialState = null;
+const getId = () => (100000 * Math.random()).toFixed(0);
 
-const reducer = (state = initialState, action) => {
-  console.log('notification state now: ', state);
-  console.log('notification action', action);
+const asObject = content => {
+  return {
+    content: content,
+    id: getId()
+  };
+};
 
+const reducer = (state = [], action) => {
   switch (action.type) {
     case 'ANECDOTE_VOTE_NOTIFICATION':
-      return `You voted "${action.content}"`;
+      return [...state, asObject(`You voted "${action.data.notification}"`)];
 
     case 'ANECDOTE_CREATED_NOTIFICATION':
-      return `Anecdote "${action.content}" created`;
+      return [...state, asObject(`Anecdote "${action.content}" created`)];
+
+    case 'SET_NOTIFICATION':
+      return [...state, action.notification];
 
     case 'RESET_NOTIFICATION':
-      return null;
+      const newState = state.filter(
+        notification => notification.id !== action.id
+      );
+      return newState;
 
     default:
       return state;
   }
 };
 
-export const resetNotification = () => {
+export const resetNotification = id => {
   return {
-    type: 'RESET_NOTIFICATION'
+    type: 'RESET_NOTIFICATION',
+    id
   };
 };
 
-export const votedNotification = content => {
-  return {
-    type: 'ANECDOTE_VOTE_NOTIFICATION',
-    content
+export const votedNotification = (content, notifyTime) => {
+  return async dispatch => {
+    const notification = asObject(content);
+    dispatch({ type: 'ANECDOTE_VOTE_NOTIFICATION', data: notification });
+    setTimeout(() => {
+      dispatch({ type: 'RESET_NOTIFICATION' });
+    }, notifyTime * 1000);
+  };
+};
+
+export const setNotification = (content, notifyTime) => {
+  return async dispatch => {
+    //Default reset time to 5 seconds if not specified
+    let resetTime = notifyTime ? notifyTime : 5;
+    const notification = asObject(content);
+    await dispatch({ type: 'SET_NOTIFICATION', notification });
+    setTimeout(() => {
+      dispatch({ type: 'RESET_NOTIFICATION', id: notification.id });
+    }, resetTime * 1000);
   };
 };
 
