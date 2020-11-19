@@ -1,47 +1,61 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { connect } from 'react-redux';
 import { voteAnecdote } from '../reducers/anecdoteReducer';
 import { setNotification } from '../reducers/notificationReducer';
 
-const Anecdote = ({ anecdote }) => {
-  const dispatch = useDispatch();
-
+const Anecdote = props => {
   const vote = anecdote => {
-    dispatch(voteAnecdote(anecdote));
-    dispatch(setNotification(`You voted "${anecdote.content}"`, 5));
+    props.voteAnecdote(anecdote);
+    props.setNotification(`You voted "${props.anecdote.content}"`, 5);
   };
 
   return (
     <>
-      <div>{anecdote.content}</div>
+      <div>{props.anecdote.content}</div>
       <div>
-        has {anecdote.votes}
-        <button onClick={() => vote(anecdote)}>Vote</button>
+        has {props.anecdote.votes}
+        <button onClick={() => vote(props.anecdote)}>Vote</button>
       </div>
     </>
   );
 };
 
-const AnecdoteList = () => {
-  const anecdotes = useSelector(state => state.anecdotes);
-  const filter = useSelector(state => state.filter);
-
-  const anecdotesToShow =
-    filter === ''
-      ? anecdotes
-      : anecdotes.filter(anecdote =>
-          anecdote.content.toLowerCase().includes(filter.toLowerCase())
-        );
+const AnecdoteList = props => {
+  //const anecdotes = useSelector(state => state.anecdotes);
+  //const filter = useSelector(state => state.filter);
 
   return (
     <>
-      {anecdotesToShow.map(anecdote => (
+      {props.anecdotes.map(anecdote => (
         <div key={anecdote.id}>
-          <Anecdote anecdote={anecdote} />
+          <Anecdote
+            anecdote={anecdote}
+            voteAnecdote={props.voteAnecdote}
+            setNotification={props.setNotification}
+          />
         </div>
       ))}
     </>
   );
 };
 
-export default AnecdoteList;
+const mapStateToProps = state => {
+  if (state.filter === '') {
+    return {
+      anecdotes: state.anecdotes
+    };
+  }
+  return {
+    anecdotes: state.anecdotes.filter(anecdote =>
+      anecdote.content.toLowerCase().includes(state.filter.toLowerCase())
+    )
+  };
+};
+
+const mapDispatchToProps = {
+  voteAnecdote,
+  setNotification
+};
+
+//export default AnecdoteList;
+export default connect(mapStateToProps, mapDispatchToProps)(AnecdoteList);
