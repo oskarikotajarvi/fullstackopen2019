@@ -1,0 +1,28 @@
+{
+  "notes": [
+    {
+      "content": "custom-hookit aivan mahtavia",
+      "id": 1
+    },
+    {
+      "content": "paras feature ikinä <3",
+      "id": 2
+    },
+    {
+      "content": "Final test of notes",
+      "id": 3
+    }
+  ],
+  "persons": [
+    {
+      "name": "mluukkai",
+      "number": "044-12341234",
+      "id": 1
+    },
+    {
+      "name": "Final Test of Persons",
+      "number": "222-222222",
+      "id": 2
+    }
+  ]
+}
