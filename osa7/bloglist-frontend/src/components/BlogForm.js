@@ -6,13 +6,13 @@ const BlogForm = ({ createBlog }) => {
   const author = useField('text');
   const url = useField('text');
 
-  const create = async e => {
+  const create = async (e) => {
     console.log(title.value);
     e.preventDefault();
     const newBlog = {
       title: title.value,
       author: author.value,
-      url: url.value
+      url: url.value,
     };
     await createBlog(newBlog);
     title.reset();
@@ -24,15 +24,15 @@ const BlogForm = ({ createBlog }) => {
     <form onSubmit={create} id="blogForm">
       <div>
         Title:
-        <input id="titleInput" {...useExcludeResetField(title)} />
+        <input id="titleInput" {...useExcludeResetField(title)} required />
       </div>
       <div>
         Author:
-        <input id="authorInput" {...useExcludeResetField(author)} />
+        <input id="authorInput" {...useExcludeResetField(author)} required />
       </div>
       <div>
         URL:
-        <input id="urlInput" {...useExcludeResetField(url)} />
+        <input id="urlInput" {...useExcludeResetField(url)} required />
       </div>
       <button type="submit" id="blogFormSubmit">
         Create

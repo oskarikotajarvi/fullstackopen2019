@@ -1,35 +1,40 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 import { useField, useExcludeResetField } from '../hooks';
+import { login } from '../reducers/loginReducer';
+import { setNotification } from '../reducers/notificationReducer';
 
-const LoginForm = ({ handleLogin }) => {
-  const username = useField('text');
-  const password = useField('password');
+const LoginForm = () => {
+  const dispatch = useDispatch();
+  const _username = useField('text');
+  const _password = useField('password');
 
-  const onLogin = async e => {
+  const onLogin = async (e) => {
     e.preventDefault();
-    await handleLogin(username.value, password.value);
+    const username = _username.value;
+    const password = _password.value;
+    try {
+      dispatch(login({ username, password }));
+    } catch (error) {
+      dispatch(setNotification('Incorrect username or password', true, 5));
+    }
   };
 
   return (
     <form onSubmit={onLogin} id="loginForm">
       <div>
         Username
-        <input id="username" {...useExcludeResetField(username)} />
+        <input id="username" {...useExcludeResetField(_username)} />
       </div>
       <div>
         Password
-        <input id="password" {...useExcludeResetField(password)} />
+        <input id="password" {...useExcludeResetField(_password)} />
       </div>
       <button type="submit" id="loginSubmit">
         Login
       </button>
     </form>
   );
-};
-
-LoginForm.propTypes = {
-  handleLogin: PropTypes.func.isRequired
 };
 
 export default LoginForm;

@@ -4,10 +4,10 @@ const baseUrl = '/api/blogs';
 let token = null;
 let config = null;
 
-const setToken = newToken => {
+const setToken = (newToken) => {
   token = `bearer ${newToken}`;
   config = {
-    headers: { Authorization: token }
+    headers: { Authorization: token },
   };
 };
 
@@ -16,9 +16,9 @@ const getAll = async () => {
   return res.data;
 };
 
-const create = async newBlog => {
+const create = async (newBlog) => {
   const config = {
-    headers: { Authorization: token }
+    headers: { Authorization: token },
   };
   const res = await axios.post(baseUrl, newBlog, config);
   const user = JSON.parse(window.localStorage.getItem('loggedUser'));
@@ -27,10 +27,10 @@ const create = async newBlog => {
   return res.data;
 };
 
-const like = async blog => {
+const like = async (blog) => {
   const url = baseUrl + `/${blog.id}`;
   const config = {
-    headers: { Authorization: token }
+    headers: { Authorization: token },
   };
 
   blog.likes += 1;
@@ -39,7 +39,7 @@ const like = async blog => {
   return res.data;
 };
 
-const remove = async id => {
+const remove = async (id) => {
   const url = `${baseUrl}/${id}`;
   const res = await axios.delete(url, config);
   return res.data;

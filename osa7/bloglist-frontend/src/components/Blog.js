@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { likeBlog, removeBlog } from '../reducers/blogReducer';
+import { setNotification } from '../reducers/notificationReducer';
 
-const Blog = ({ blog, handleLike, handleRemove }) => {
+const Blog = ({ blog }) => {
+  const dispatch = useDispatch();
   const [fullView, setView] = useState(false);
 
   const user = JSON.parse(window.localStorage.getItem('loggedUser'));
@@ -11,15 +15,25 @@ const Blog = ({ blog, handleLike, handleRemove }) => {
 
   const showWhenVisible = { display: fullView ? '' : 'none' };
 
-  const like = async e => {
+  const like = (e) => {
     e.preventDefault();
-    await handleLike(blog);
+    try {
+      dispatch(likeBlog({ id: blog.id, likes: blog.likes }));
+    } catch (error) {
+      console.error(error);
+      dispatch(setNotification('Error while liking the blog...', true, 5));
+    }
   };
 
-  const remove = async e => {
+  const remove = (e) => {
     e.preventDefault();
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-      await handleRemove(blog.id);
+      try {
+        dispatch(removeBlog(blog.id));
+      } catch (error) {
+        console.error(error);
+        dispatch(setNotification('Error while removing the blog...', true, 5));
+      }
     }
   };
 

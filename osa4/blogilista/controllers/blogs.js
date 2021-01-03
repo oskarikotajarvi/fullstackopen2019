@@ -25,7 +25,7 @@ blogsRouter.post('/', async (req, res) => {
     author: body.author,
     url: body.url,
     likes: body.likes === undefined ? 0 : body.likes,
-    user: user._id
+    user: user._id,
   });
 
   const result = await blog.save();
@@ -33,7 +33,7 @@ blogsRouter.post('/', async (req, res) => {
   await user.save();
   const returnBlog = await Blog.findById(result._id).populate('user', {
     username: 1,
-    name: 1
+    name: 1,
   });
   res.status(201).send(returnBlog.toJSON());
 });
@@ -60,7 +60,7 @@ blogsRouter.delete('/:id', async (req, res) => {
 blogsRouter.put('/:id', async (req, res) => {
   const blog = { likes: req.body.likes };
   const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, blog, {
-    new: true
+    new: true,
   });
   res.json(updatedBlog.toJSON());
 });
