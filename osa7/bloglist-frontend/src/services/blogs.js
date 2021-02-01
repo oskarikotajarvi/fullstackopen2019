@@ -39,10 +39,20 @@ const like = async (blog) => {
   return res.data;
 };
 
+const comment = async (id, comment) => {
+  const url = baseUrl + `/${id}/comments`;
+  const config = {
+    headers: { Authorization: token },
+  };
+
+  const res = await axios.post(url, { comment }, config);
+  return res.data;
+};
+
 const remove = async (id) => {
   const url = `${baseUrl}/${id}`;
   const res = await axios.delete(url, config);
   return res.data;
 };
 
-export default { getAll, create, setToken, like, remove };
+export default { getAll, create, setToken, like, comment, remove };

@@ -11,7 +11,6 @@ const reducer = (state = [], action) => {
       return [...state, action.data];
 
     case 'LIKE_BLOG':
-      console.log(action.data);
       const newBlogs = state.slice();
       const likedBlog = newBlogs.find((b) => b.id === action.data.id);
       newBlogs[newBlogs.indexOf(likedBlog)].likes = action.data.likes;
@@ -23,9 +22,22 @@ const reducer = (state = [], action) => {
       const updatedBlogs = state.filter((blog) => blog.id !== action.data.id);
       return [...updatedBlogs];
 
+    case 'COMMENT_BLOG':
+      const tempBlogs = state.slice();
+      const commentedBlog = tempBlogs.find((b) => b.id === action.data.id);
+      tempBlogs[tempBlogs.indexOf(commentedBlog)] = action.data;
+      return tempBlogs;
+
     default:
       return [...state];
   }
+};
+
+export const commentBlog = (id, comment) => {
+  return async (dispatch) => {
+    const res = await blogService.comment(id, comment);
+    dispatch({ type: 'COMMENT_BLOG', data: res });
+  };
 };
 
 export const likeBlog = (blog) => {

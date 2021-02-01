@@ -65,4 +65,27 @@ blogsRouter.put('/:id', async (req, res) => {
   res.json(updatedBlog.toJSON());
 });
 
+// Add a comment to a blog
+blogsRouter.post('/:id/comments', async (req, res) => {
+  const body = req.body;
+  const decodedToken = jwt.verify(req.token, process.env.SECRET);
+
+  if (!decodedToken.id) {
+    return res.status(401).json({ error: 'token missing or invalid' });
+  }
+
+  const blog = await Blog.findById(req.params.id).populate('user', {
+    username: 1,
+    name: 1,
+  });
+
+  if (!blog) {
+    return res.status(404).json({ error: 'Blog not found' });
+  }
+
+  blog.comments.push(body.comment);
+  await blog.save();
+  return res.status(200).json(blog);
+});
+
 module.exports = blogsRouter;

@@ -3,6 +3,10 @@ import { useDispatch } from 'react-redux';
 import { useField, useExcludeResetField } from '../hooks';
 import { login } from '../reducers/loginReducer';
 import { setNotification } from '../reducers/notificationReducer';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -21,19 +25,38 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={onLogin} id="loginForm">
-      <div>
-        Username
-        <input id="username" {...useExcludeResetField(_username)} />
-      </div>
-      <div>
-        Password
-        <input id="password" {...useExcludeResetField(_password)} />
-      </div>
-      <button type="submit" id="loginSubmit">
-        Login
-      </button>
-    </form>
+    <Container className="justify-content-center">
+      <Row className="justify-content-center">
+        <h1>Login</h1>
+      </Row>
+      <Form onSubmit={onLogin}>
+        <Row className="justify-content-center">
+          <Form.Group>
+            <Form.Control
+              type="text"
+              placeholder="Userame"
+              {...useExcludeResetField(_username)}
+              required
+            />
+          </Form.Group>
+        </Row>
+        <Row className="justify-content-center">
+          <Form.Group>
+            <Form.Control
+              type="password"
+              placeholder="Password"
+              {...useExcludeResetField(_password)}
+              required
+            />
+          </Form.Group>
+        </Row>
+        <Row className="justify-content-center">
+          <Button type="submit" variant="primary">
+            Login
+          </Button>
+        </Row>
+      </Form>
+    </Container>
   );
 };
 
