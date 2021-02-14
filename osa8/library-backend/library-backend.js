@@ -40,6 +40,7 @@ const resolvers = {
   Query: {
     bookCount: () => books.length,
     authorCount: () => authors.length,
+
     allBooks: (root, args) => {
       if (args.author && args.genre) {
         return books.filter(
@@ -53,6 +54,7 @@ const resolvers = {
       }
       return books;
     },
+
     allAuthors: () => authors,
   },
 
