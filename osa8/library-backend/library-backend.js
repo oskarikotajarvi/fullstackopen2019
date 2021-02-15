@@ -1,45 +1,35 @@
-const { ApolloServer, gql } = require('apollo-server');
-const { v4: uuidv4 } = require('uuid');
+const { ApolloServer, UserInputError } = require('apollo-server');
+const typeDefs = require('./typeDefs');
+const mongoose = require('mongoose');
+const Author = require('./models/author.model');
+const Book = require('./models/book.model');
 let { authors, books } = require('./data');
 
-const typeDefs = gql`
-  type Author {
-    name: String!
-    id: ID!
-    born: Int
-    bookCount: Int
-  }
+const MONGODB_URI =
+  'mongodb+srv://fullstack:asdfasdf@librarytms.bqjzd.mongodb.net/librarytms?retryWrites=true&w=majority';
 
-  type Book {
-    title: String!
-    published: Int!
-    author: String!
-    id: ID!
-    genres: [String]
-  }
-
-  type Query {
-    bookCount: Int!
-    authorCount: Int!
-    allBooks(author: String, genre: String): [Book!]!
-    allAuthors: [Author!]!
-  }
-
-  type Mutation {
-    addBook(
-      title: String!
-      published: Int!
-      author: String!
-      genres: [String!]!
-    ): Book
-    editAuthor(name: String, setBornTo: Int): Author
-  }
-`;
+mongoose
+  .connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useCreateIndex: true,
+  })
+  .then(() => {
+    console.log('connected to MongoDB');
+  })
+  .catch((error) => {
+    console.log('error connection to MongoDB:', error.message);
+  });
 
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
-    authorCount: () => authors.length,
+    bookCount: () => Book.find({}).length,
+
+    authorCount: async () => {
+      const authors = await Author.find({});
+      return authors.length;
+    },
 
     allBooks: (root, args) => {
       if (args.author && args.genre) {
@@ -50,12 +40,13 @@ const resolvers = {
       } else if (args.author) {
         return books.filter((book) => book.author === args.author);
       } else if (args.genre) {
-        return books.filter((book) => book.genres.includes(args.genre));
+        return Book.find({ genres: { $in: args.genre } });
       }
-      return books;
+
+      return Book.find({});
     },
 
-    allAuthors: () => authors,
+    allAuthors: () => Author.find({}),
   },
 
   Author: {
@@ -64,15 +55,28 @@ const resolvers = {
   },
 
   Mutation: {
-    addBook: (root, args) => {
-      const book = { ...args, id: uuidv4() };
-      books = books.concat(book);
+    addBook: async (root, args) => {
+      let newBook = null;
+      let newAuthor = null;
+      const author = await Author.findOne({ name: args.author });
 
-      if (!authors.some((a) => a.name === args.author)) {
-        authors.push({ name: args.author, born: null, id: uuidv4() });
+      if (author === null) {
+        newAuthor = new Author({ name: args.author });
+        newBook = new Book({ ...args, author: newAuthor._id });
+      } else {
+        newBook = new Book({ ...args, author: author._id });
       }
 
-      return book;
+      try {
+        if (newAuthor) {
+          await newAuthor.save();
+        }
+        await newBook.save();
+      } catch (error) {
+        throw new UserInputError(error.message, { invalidArgs: args });
+      }
+
+      return newBook;
     },
 
     editAuthor: (root, args) => {
