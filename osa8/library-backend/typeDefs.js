@@ -26,12 +26,17 @@ const typeDefs = gql`
     value: String!
   }
 
+  type Genres {
+    value: [String!]
+  }
+
   type Query {
     bookCount: Int!
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
     me: User
+    genres: Genres
   }
 
   type Mutation {
