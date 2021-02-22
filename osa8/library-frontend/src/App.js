@@ -23,11 +23,7 @@ const App = () => {
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
         {token && <button onClick={() => setPage('add')}>add book</button>}
-        {token && (
-          <button onClick={() => setPage('recommendations')}>
-            Recommendations
-          </button>
-        )}
+        {token && <button onClick={() => setPage('recommendations')}>Recommendations</button>}
         {!token && <button onClick={() => setPage('login')}>Login</button>}
         {token && <button onClick={logout}>Logout</button>}
       </div>
