@@ -1,9 +1,9 @@
 import { v1 as uuid } from 'uuid';
 
 import patientEntries from '../data/patients.data';
-import { Patient, DescreetPatient, NewPatientEntry } from '../types';
+import { Patient, PublicPatient, NewPatientEntry } from '../types';
 
-const getDescreetPatients = (): Array<DescreetPatient> => {
+const getDescreetPatients = (): Array<PublicPatient> => {
     return patientEntries.map(({ id, name, dateOfBirth, gender, occupation }) => ({
         id,
         name,
@@ -23,4 +23,13 @@ const addPatient = (patient: NewPatientEntry): Patient => {
     return newPatientEntry;
 };
 
-export default { getDescreetPatients, getPatients, addPatient };
+const getPatient = (id: string): PublicPatient => {
+    const patient = patientEntries.filter((patient) => patient.id === id);
+    if (!patient) {
+        throw new Error('Patient not found');
+    } else {
+        return patient[0];
+    }
+};
+
+export default { getDescreetPatients, getPatients, addPatient, getPatient };

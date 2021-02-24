@@ -33,10 +33,6 @@ interface ICoursePartFive extends ICoursePartBase {
     description: string;
 }
 
-// interface ICoursePartFour extends ICoursePartBase {
-//     description: string;
-// }
-
 export type CoursePart = ICoursePartOne | ICoursePartTwo | ICoursePartThree | ICoursePartFive;
 
 const App: React.FC = () => {

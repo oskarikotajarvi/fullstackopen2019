@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NewPatientEntry, Gender } from './types';
+import { NewPatientEntry, Gender, Entry } from './types';
 
 export const toNewPatientEntry = (object: any): NewPatientEntry => {
     return {
@@ -8,7 +8,38 @@ export const toNewPatientEntry = (object: any): NewPatientEntry => {
         ssn: parseStringField(object.ssn),
         gender: parseGender(object.gender),
         occupation: parseStringField(object.occupation),
+        entries: parseEntries(object.entries),
     };
+};
+
+const isEntryArray = (entries: any): entries is Array<Entry> => {
+    if (!isArray(entries)) {
+        throw new Error('Malformatted entries');
+    }
+
+    const typeCheck = entries.some((entry) => {
+        entry.type === 'HealthCheck' || entry.type === 'OccupationalHealthCare' || entry.type === 'Hospital';
+    });
+
+    return !typeCheck;
+};
+
+const parseEntries = (entries: any): Array<Entry> => {
+    if (!isArray(entries)) {
+        throw new Error('Malformatted entries');
+    }
+
+    if (entries.length === 0) {
+        return [];
+    } else if (!isEntryArray(entries)) {
+        throw new Error('Malformatted entries');
+    } else {
+        return entries;
+    }
+};
+
+const isArray = (entries: any): entries is Array<any> => {
+    return Array.isArray(entries);
 };
 
 const parseStringField = (field: any): string => {
@@ -17,13 +48,6 @@ const parseStringField = (field: any): string => {
     }
     return field;
 };
-
-// const parseDate = (date: any): string => {
-//     if (!date || isString(date) || isDate(date)) {
-//         throw new Error('Incorrect or missing date: ' + date);
-//     }
-//     return date;
-// };
 
 const parseGender = (gender: any): Gender => {
     if (!gender || !isGender(gender)) {
@@ -39,7 +63,3 @@ const isGender = (param: any): param is Gender => {
 const isString = (text: any): text is string => {
     return typeof text === 'string' || text instanceof String;
 };
-
-// const isDate = (date: string): boolean => {
-//     return Boolean(Date.parse(date));
-// };
