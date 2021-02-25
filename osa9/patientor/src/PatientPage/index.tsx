@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Container, Divider, Header, Icon } from 'semantic-ui-react';
 
 import EntryCard from '../components/Entry';
+import GenderIcon from '../components/GenderIcons';
 
 import { Patient } from '../types';
 import { useStateValue } from '../state';
@@ -33,22 +34,11 @@ const PatientPage: React.FC = () => {
         return null;
     }
 
-    const determineGenderIcon = () => {
-        switch (patient.gender) {
-            case 'male':
-                return <Icon name="mars" />;
-            case 'female':
-                return <Icon name="venus" />;
-            case 'other':
-                return <Icon name="genderless" />;
-        }
-    };
-
     return (
         <div className="App">
             <Container>
                 <Header as="h2">
-                    {patient.name} {determineGenderIcon()}
+                    {patient.name} <GenderIcon gender={patient.gender} />
                 </Header>
                 <p>ssn: {patient.ssn}</p>
                 <p>Occupation: {patient.occupation}</p>
